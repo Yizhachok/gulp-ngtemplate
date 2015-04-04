@@ -22,14 +22,21 @@ module.exports = function(options) {
     }
 
     var name = path.relative(file.base, file.path);
+    var pathPrefix = options.pathPrefix || '';
     var contents = file.contents.toString('utf8').replace(/\'/g, '\\\'').replace(/\r?\n/g, '\\n\' +\n  \'');
     var module = typeof options.module === 'function' ? options.module.call(file, name) : (options.module || 'ngTemplates');
     var standalone = options.standalone ? ', []' : '';
-    var header = gutil.template('angular.module(\'<%= module %>\'<%= standalone %>).run([\'$templateCache\', function($templateCache) {', {module: module, standalone: standalone, file: ''});
-    var content = gutil.template('  $templateCache.put(\'<%= name %>\', \'<%= contents %>\');', {name: normalizeTemplateName(name), contents: contents, file: ''});
-    var footer = '}]);';
+    var header = gutil.template(typeof options.header === 'string' ? options.header :'angular.module(\'<%= module %>\'<%= standalone %>).run([\'$templateCache\', function($templateCache) {', {module: module, standalone: standalone, file: ''});
+    var content = gutil.template('  $templateCache.put(\'<%= name %>\', \'<%= contents %>\');', {name: normalizeTemplateName(pathPrefix + name), contents: contents, file: ''});
+    var footer = typeof options.footer === 'string' ? options.footer : '}]);';
+    
+    var buffer = [];
+    if(options.useStrict !== false) buffer.push('\'use strict\';');
+    if(header.length) buffer.push(header);
+    buffer.push(content);
+    if(footer.length) buffer.push(footer);
 
-    file.contents = new Buffer(['\'use strict\';', header, content, footer].join('\n\n'));
+    file.contents = new Buffer(buffer.join('\n\n'));
     file.path = gutil.replaceExtension(file.path, '.js');
     if(options.debug) gutil.log(util.format('File \'%s\' created.', chalk.cyan(path.relative(process.cwd(), file.path))));
     next(null, file);

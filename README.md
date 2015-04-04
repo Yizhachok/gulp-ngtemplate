@@ -48,6 +48,29 @@ Create an AngularJS module.
 
 Default: false
 
+- pathPrefix (String)
+
+Add prefix to file path.
+
+Default: Empty string
+
+- header (String)
+
+Header to template module.
+
+Default: `angular.module('<%= module %>'<%= standalone %>).run(['$templateCache', function($templateCache) {`
+
+- footer (String)
+
+Footer to template module.
+
+Default: `}]);`
+
+- useStrict (Boolean)
+
+Add `'use strict';` at the beginning of the file.
+
+Default: true
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality.
